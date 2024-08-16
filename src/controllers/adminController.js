@@ -171,4 +171,34 @@ const resendOTP = async (req, res) => {
     res.status(500).json({ message: 'Server error', error });
   }
 };
-module.exports = { adminlogin, admincreate, OTPverify, resendOTP };
+
+//Admin Password Reset
+// const resetPassword = async (req, res) => {
+//   try {
+//       const { email, newPassword, confirmPassword } = req.body;
+
+//       if( !email || !newPassword || !confirmPassword) {
+//           return res.status(400).json({ message: 'All fields are required' });
+//       }
+
+//       const admin = await Admin.findOne({ email });
+//       if (!admin) {
+//           return res.status(400).json({ message: 'Admin not found' });
+//       }
+
+//       if (newPassword !== confirmPassword) {
+//           return res.status(400).json({ message: 'Passwords do not match' });
+//       }
+
+//       const salt = bcrypt.genSaltSync(10);
+//       admin.password = bcrypt.hashSync(newPassword, salt);
+//       await admin.save();
+
+//       res.status(200).json({ message: 'Password updated successfully' });
+//   } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: 'Server error', error });
+//   }
+// };
+
+module.exports = { adminlogin, admincreate, OTPverify, resendOTP};

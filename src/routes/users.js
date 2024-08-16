@@ -17,5 +17,6 @@ userRouter.post("/verify", OTPverify);
 userRouter.post("/resendOTP/:email", resendOTP);
 userRouter.post("/forget/:email", forgetPassword);
 userRouter.put("/password", userPasswordUpdate);
+userRouter.get("/sequre", sequre);
 
 module.exports = userRouter;

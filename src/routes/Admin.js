@@ -10,4 +10,5 @@ adminRouter.post('/admincreate', admincreate);
 adminRouter.post('/adminverify/:email', OTPverify);
 adminRouter.post('/adminresendOTP/:email', resendOTP);
 
+
 module.exports = adminRouter;

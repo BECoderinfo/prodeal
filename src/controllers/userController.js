@@ -32,6 +32,13 @@ const sequre = async function (req, res, next) {
         }
         const decoded = jwt.verify(token, 'Prodeals');
         req.userId = decoded.userId; 
+        const userdata = await User.findById(req.userId);
+        
+        res.status(200).json({
+            status: "Success",
+            message: "Token verified",
+            data: userdata   
+        })
         next();
     } catch (error) {
         res.status(404).json({
