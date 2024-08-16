@@ -3,6 +3,25 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const otpGenerator = require('otp-generator');
 const nodemailer = require('nodemailer');
+const cron = require('node-cron');
+
+// Delete unverified users after 24
+cron.schedule('0 0 * * *', async () => {
+    try {
+        const now = Date.now();
+        const users = await User.find({
+            status: 'unVerified',
+            createdAt: { $lte: new Date(now - 24 * 60 * 60 * 1000) } // 24 hours ago
+        });
+
+        for (const user of users) {
+            await User.findByIdAndDelete(user._id);
+            console.log(`Deleted user ${user._id} due to expiry`);
+        }
+    } catch (error) {
+        console.error('Error during scheduled task:', error);
+    }
+});
 
 // Middleware for token verification
 const sequre = async function (req, res, next) {
@@ -67,24 +86,21 @@ const userRegister = async (req, res, next) => {
             html: `<p style="font-size: 20px">Your OTP code is <span style="color: blue">${otp}</span>. It is valid for 2 minutes.</p>`,
         };
 
-        transporter.sendMail(mailOptions, (error, info) => {
+        transporter.sendMail(mailOptions, (error) => {
             if (error) {
                 return res.status(500).json({ message: 'Error sending OTP' });
             }
             res.json({ message: 'OTP successfully sent', user ,otp}); 
         });
 
-      
-
     } catch (error) {
-        console.log('Server error:', error);
+       
         res.status(500).json({ message: 'Server error', error });
     }
 };
 
-
 // User Login
-const userLogin = async (req, res, next) => {
+const userLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -107,7 +123,7 @@ const userLogin = async (req, res, next) => {
 
         res.status(200).json({ message: 'Login successful', usertoken });
     } catch (error) {
-        console.log('Server error:', error);
+        
         res.status(500).json({ message: 'Server error', error });
     }
 };
@@ -117,8 +133,8 @@ const OTPverify = async (req, res) => {
     const { email, otp } = req.body;
 
     try {
-        const user = await User.findOne({ email });
-        
+        const user = await User.findOne({ email });   
+
         if (!user) {
             return res.status(400).json({ message: 'User not found' });
         }
@@ -331,6 +347,5 @@ const userPasswordUpdate = async (req, res) => {
         res.status(500).json({ message: 'Server error', error });
     }
 };
-
 
 module.exports = { userRegister, userLogin, userImageUpload, userProfileUpdate, getAllUsers, sequre, OTPverify, resendOTP, forgetPassword, userPasswordUpdate };

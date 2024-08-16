@@ -13,6 +13,11 @@ const adminSchema = new mongoose.Schema({
         type: String,
         required: [true, "Please provide your phone number"],
     },
+    status: {
+        type : String,
+        default: "unVerified",
+        enum: ["unVerified", "Verified"]
+    },
     otp: { type: String },
 
     otpExpires: { type: Date },
