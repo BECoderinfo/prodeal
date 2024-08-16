@@ -187,21 +187,6 @@ const getAllBusinesses = async (req, res) => {
   }
 };
 
-const weeklySales = async (req, res) => {
-  try {
-    const currentDate = new Date();
-    const startOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - currentDate.getDay());
-    const endOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - currentDate.getDay() + 6);
-    const orders = await Order.find({ createdAt: { $gte: startOfWeek, $lte: endOfWeek }, status: 'Completed' });
-    const total = orders.reduce((acc, order) => acc + order.totalPrice, 0);
-    const totalOrder = orders.length;
-    res.status(200).json({ totalWeeklySales: total, totalWeeklyOrders: totalOrder });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error fetching weekly sales' });
-  }
-}
-
 //total earnings from completed orders
 const totalEarnings = async (req, res) => {
   
@@ -310,6 +295,67 @@ const GovermentIdUpload = async (req, res) => {
 };
 
 
+//get sales data on keys
+const SalesData = async (req, res) => {
+  try {
+    const currentDate = new Date();
+    const key = req.params.key; 
+    
+    const startOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - currentDate.getDay());
+    const endOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - currentDate.getDay() + 6);
+
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+    const startOfYear = new Date(currentDate.getFullYear(), 0, 1);
+    const endOfYear = new Date(currentDate.getFullYear(), 11, 31);
+
+    const response = {};
+
+    if (key === 'yearly') {
+      
+      const yearlyOrders = await Order.find({
+        createdAt: { $gte: startOfYear, $lte: endOfYear },
+        status: 'Completed',
+      });
+      const totalYearlySales = yearlyOrders.reduce((acc, order) => acc + order.totalPrice, 0);
+      const totalYearlyOrders = yearlyOrders.length;
+      
+      response.totalYearlySales = totalYearlySales;
+      response.totalYearlyOrders = totalYearlyOrders;
+
+    } else if (key === 'monthly') {
+      
+      const monthlyOrders = await Order.find({
+        createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+        status: 'Completed',
+      });
+      const totalMonthlySales = monthlyOrders.reduce((acc, order) => acc + order.totalPrice, 0);
+      const totalMonthlyOrders = monthlyOrders.length;
+
+      
+      response.totalMonthlySales = totalMonthlySales;
+      response.totalMonthlyOrders = totalMonthlyOrders;
+
+    } else if (key === 'weekly') { 
+      const weeklyOrders = await Order.find({
+        createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+        status: 'Completed',
+      });
+      const totalWeeklySales = weeklyOrders.reduce((acc, order) => acc + order.totalPrice, 0);
+      const totalWeeklyOrders = weeklyOrders.length; 
+      response.totalWeeklySales = totalWeeklySales;
+      response.totalWeeklyOrders = totalWeeklyOrders;
+    } else {
+      return res.status(400).json({ error: 'Invalid key. Please use "weekly", "monthly", or "yearly".' });
+    }
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error fetching sales data' });
+  }
+};
+
 module.exports = { insertRequestBusiness,createBusiness,
   getBusinessById,
   updateBusinessById,
@@ -319,10 +365,10 @@ module.exports = { insertRequestBusiness,createBusiness,
   acceptBusinessRequest,
   rejectBusinessRequest,
   totalEarnings,
-  weeklySales,
   UploadMenuImage,
   UploadStoreImage,
   UploadMainImage,
   WateridentyUpload,
-  GovermentIdUpload
+  GovermentIdUpload,
+  SalesData
 };

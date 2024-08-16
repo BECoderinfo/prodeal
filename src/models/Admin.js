@@ -12,9 +12,20 @@ const adminSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, "Please provide your phone number"],
-        
-    }
+    },
+    otp: { type: String },
+
+    otpExpires: { type: Date },
 }, { timestamps: true });
+
+
+adminSchema.pre("save", async function (next) {
+    if (this.isModified("status") && this.status === "Verified") {
+        this.otp = undefined;
+        this.otpExpires = undefined;
+    }
+    next();
+});
 
 const Admin = mongoose.model("Admin", adminSchema);
 module.exports = Admin;
