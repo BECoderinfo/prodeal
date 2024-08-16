@@ -10,7 +10,7 @@ const userRouter = express.Router();
 
 userRouter.post("/register", userRegister);
 userRouter.post("/login", userLogin);
-userRouter.put("/update/:id", sequre ,upload.single('image'), userProfileUpdate);
+userRouter.put("/update/:id",upload.single('image'), userProfileUpdate);
 userRouter.post("/upload/:id",upload.single('image'),userImageUpload);
 userRouter.get("/alluser", getAllUsers);
 userRouter.post("/verify", OTPverify);
