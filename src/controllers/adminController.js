@@ -126,6 +126,51 @@ const OTPverify = async (req, res) => {
   }
 };
 
+//Forgot Password
+const forgotPassword = async (req, res) => {
+  const { email } = req.params;
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.status(400).json({ message: 'Admin not found' });
+    }
+
+    const otp = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
+    const otpHash = await bcrypt.hash(otp, 10);
+    const otpExpires = Date.now() + 1 * 60 * 1000; // Valid for 1 minute
+
+    admin.otp = otpHash;
+    admin.otpExpires = otpExpires;
+    await admin.save();
+
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: 'ProDeals:upendrajin069@gmail.com', // Use 'user' instead of 'admin'
+        pass: 'sdjtxujwaavlraob', // Use your Gmail app password
+      },
+    });
+
+    const mailOptions = {
+      from: 'ProDeals:upendrajin069@gmail.com',
+      to: admin.email,
+      subject: 'Your OTP Code',
+      html: `<p style="font-size: 20px">Admin OTP code is <span style="color: blue">${otp}</span>. It is valid for 1 minute.</p>`
+    };  
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error(`Error sending OTP email: ${error}`);
+        return res.status(500).json({ message: 'Error sending OTP' });
+      }
+      console.log(`OTP sent: ${info.response}`);
+      res.json({ message: 'OTP successfully sent', otp });
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
 // resend otp
 const resendOTP = async (req, res) => {
   const { email } = req.params; // Use req.body if you're sending email in body instead
@@ -173,32 +218,32 @@ const resendOTP = async (req, res) => {
 };
 
 //Admin Password Reset
-// const resetPassword = async (req, res) => {
-//   try {
-//       const { email, newPassword, confirmPassword } = req.body;
+const resetPassword = async (req, res) => {
+  try {
+      const { email, newPassword, confirmPassword } = req.body;
 
-//       if( !email || !newPassword || !confirmPassword) {
-//           return res.status(400).json({ message: 'All fields are required' });
-//       }
+      if( !email || !newPassword || !confirmPassword) {
+          return res.status(400).json({ message: 'All fields are required' });
+      }
 
-//       const admin = await Admin.findOne({ email });
-//       if (!admin) {
-//           return res.status(400).json({ message: 'Admin not found' });
-//       }
+      const admin = await Admin.findOne({ email });
+      if (!admin) {
+          return res.status(400).json({ message: 'Admin not found' });
+      }
 
-//       if (newPassword !== confirmPassword) {
-//           return res.status(400).json({ message: 'Passwords do not match' });
-//       }
+      if (newPassword !== confirmPassword) {
+          return res.status(400).json({ message: 'Passwords do not match' });
+      }
 
-//       const salt = bcrypt.genSaltSync(10);
-//       admin.password = bcrypt.hashSync(newPassword, salt);
-//       await admin.save();
+      const salt = bcrypt.genSaltSync(10);
+      admin.password = bcrypt.hashSync(newPassword, salt);
+      await admin.save();
 
-//       res.status(200).json({ message: 'Password updated successfully' });
-//   } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: 'Server error', error });
-//   }
-// };
+      res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error', error });
+  }
+};
 
-module.exports = { adminlogin, admincreate, OTPverify, resendOTP};
+module.exports = { adminlogin, admincreate, OTPverify, forgotPassword, resetPassword , resendOTP};

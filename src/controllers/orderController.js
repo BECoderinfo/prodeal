@@ -3,33 +3,54 @@ const User = require('../models/users');
 const Product = require('../models/product');
 const Promocode = require('../models/promocode');
 
+
 // const createOrder = async (req, res) => {
 //     try {
-//         const { userId, orderItems, promocode, businessId } = req.body;
+//         const { userId, orderItems, businessId } = req.body;
+//         const  promocode  = req.body.promocode;
 
-//         if (!userId || !businessId || !orderItems) {
+//         if (!userId || !businessId || !orderItems){
 //             return res.status(400).json({ error: 'userId, businessId, and orderItems are required' });
 //         }
 
 //         const user = await User.findById(userId);
-
 //         if (!user) {
 //             return res.status(404).json({ error: 'User not found' });
+//         }
+
+//         let discount = 0;
+        
+//         if (promocode) {
+//             const promo = await Promocode.findOne({promocode : promocode});
+//             if (promo) {
+//                 const alreadyUsed = await Order.findOne({ promocode, userId });
+//                 if (alreadyUsed) {
+//                     return res.status(400).json({ error: 'Promocode already used' });
+//                 }
+//                 // discount = promo.discount; 
+//                 if (promo.discountType === 'Percentage') {
+//                     discount = (promo.discount / 100) * promo.neededAmount;
+//                 } else {
+//                     discount = promo.discount;
+//                 }
+                
+//             } else {
+//                 return res.status(400).json({ error: 'Invalid or inactive promocode' });
+//             }
 //         }
 
 //         const orderItemsWithPrice = await Promise.all(orderItems.map(async (item) => {
 //             const product = await Product.findById(item.product);
 
 //             if (!product) {
-//                 return res.status(404).json({ error: 'Product not found' });
+//                 throw new Error('Product not found');
 //             }
 
 //             if (isNaN(item.quantity) || isNaN(product.productPrice)) {
-//                 return res.status(400).json({ error: 'Invalid quantity or price' });
+//                 throw new Error('Invalid quantity or price');
 //             }
 
 //             const total = item.quantity * product.productPrice;
-
 //             return {
 //                 ...item,
 //                 price: product.productPrice,
@@ -38,19 +59,24 @@ const Promocode = require('../models/promocode');
 //         }));
 
 //         const total = orderItemsWithPrice.reduce((acc, item) => acc + item.total, 0);
-//         // const totalWithDiscount = total - discount;
+//         let finalPrice;
 
-//         // if (isNaN(totalWithDiscount)) {
-//         //     return res.status(400).json({ error: 'Invalid discount' });
-//         // }
+//         if(discount){
+//              finalPrice = total - discount;
+//         }else{
+//             finalPrice = total;
+//         }
+        
+//         if (finalPrice < 0){
+//             return res.status(400).json({ error: 'Final price cannot be negative' });
+//         }
 
 //         const order = new Order({
 //             userId,
 //             businessId,
 //             orderItems: orderItemsWithPrice,
 //             promocode,
-//             totalPrice: total,
-//             // finalPrice: totalWithDiscount
+//             totalPrice: finalPrice,
 //         });
 
 //         await order.save();
@@ -58,16 +84,14 @@ const Promocode = require('../models/promocode');
 //         return res.status(201).json({ message: 'Order created successfully', order });
 //     } catch (error) {
 //         console.error(error);
-//         return res.status(500).json({ error: 'Error creating order' });
+//         return res.status(500).json({ error: error.message || 'Error creating order' });
 //     }
-// };
+//  };
 
-
- const createOrder = async (req, res) => {
+const createOrder = async (req, res) => {
     try {
         const { userId, orderItems, businessId } = req.body;
-        const  promocode  = req.body.promocode;
-
+        const promocode = req.body.promocode;
 
         if (!userId || !businessId || !orderItems) {
             return res.status(400).json({ error: 'userId, businessId, and orderItems are required' });
@@ -79,15 +103,41 @@ const Promocode = require('../models/promocode');
         }
 
         let discount = 0;
-        
+
         if (promocode) {
-            const promo = await Promocode.findOne({promocode : promocode});
+            const promo = await Promocode.findOne({ promocode: promocode });
             if (promo) {
-                discount = promo.discount; 
-                
+                const alreadyUsed = await Order.findOne({ promocode, userId });
+                if (alreadyUsed) {
+                    return res.status(400).json({ error: 'Promocode already used' });
+                }
+                // discount = promo.discount; 
+                if (promo.discountType === 'Percentage') {
+                    discount = (promo.discount / 100) * promo.neededAmount;
+                } else {
+                    discount = promo.discount;
+                }
+
             } else {
                 return res.status(400).json({ error: 'Invalid or inactive promocode' });
             }
+        }
+
+        let offerprice = 0;
+
+        if (offerprice) {
+            const offer = await Offer.findOne({ offerId: offerprice });
+            if (offer) {
+                if (offer.offertype === 'Percentage') {
+                    offerprice = (offer.offerprice / 100) * offer.neededAmount;
+                } else {
+                    offerprice = offer.offerprice;
+                }
+
+            } else {
+                return res.status(400).json({ error: 'Invalid or inactive promocode' });
+            }
+
         }
 
         const orderItemsWithPrice = await Promise.all(orderItems.map(async (item) => {
@@ -111,14 +161,14 @@ const Promocode = require('../models/promocode');
 
         const total = orderItemsWithPrice.reduce((acc, item) => acc + item.total, 0);
         let finalPrice;
-
-        if(discount){
-             finalPrice = total - discount;
-        }else{
-            finalPrice = total;
+        ///pose
+        if (discount) {
+            finalPrice = total - discount - offerprice;
+        } else {
+            finalPrice = total - offerprice;
         }
-        
-        if (finalPrice < 0){
+
+        if (finalPrice < 0) {
             return res.status(400).json({ error: 'Final price cannot be negative' });
         }
 
@@ -137,7 +187,8 @@ const Promocode = require('../models/promocode');
         console.error(error);
         return res.status(500).json({ error: error.message || 'Error creating order' });
     }
- };
+};
+
 
 
 const acceptOrder = async (req, res) => {
@@ -149,7 +200,8 @@ const acceptOrder = async (req, res) => {
         }
         order.status = 'Processing';
         order.orderStatus = 'Accepted';
-        await order.save();
+        await o
+        rder.save();
         res.status(200).json({ message: 'Order accepted successfully', order });
     } catch (error) {
         res.status(500).json({ error: 'Error accepting order' });
