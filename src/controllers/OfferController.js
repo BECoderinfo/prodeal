@@ -37,7 +37,7 @@ const createOffer = async (req, res) => {
 //Get Offers
 const getOffers = async (req, res) => {
     try {
-        const offers = await Offer.find();
+        const offers = await Offer.find().populate('businessId');
         if (offers.length === 0) {
             return res.status(404).json({ error: 'offers not found' });
         }
