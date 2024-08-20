@@ -11,7 +11,7 @@ orderRouter.post("/create", createOrder);
 orderRouter.put("/accept/:id", acceptOrder);
 orderRouter.put("/cancel/:id", cancelOrder);
 orderRouter.get("/get/:id", getOrderById);
-orderRouter.post("/all", getAllOrders);
+orderRouter.post("/all/:businessId", getAllOrders);
 orderRouter.post("/today", getTodayOrders);
 orderRouter.put("/reject/:id", rejectOrder);
 orderRouter.get("/pending/:businessId", getPendingOrders);

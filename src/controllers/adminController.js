@@ -1,6 +1,5 @@
 const Admin = require('../models/Admin')
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const otpGenerator = require('otp-generator');
 const nodemailer = require('nodemailer');
 

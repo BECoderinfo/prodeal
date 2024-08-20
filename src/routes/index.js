@@ -12,6 +12,7 @@ const  adminRouter = require('./Admin');
 const offerRouter = require('./offer');
 const ratingRouter = require('./rating');
 const bannerRouter = require('./banner');
+const staffRouter = require('./staff');
 
 const indexRouter = express.Router();
 
@@ -28,6 +29,7 @@ indexRouter.use('/admin', adminRouter);
 indexRouter.use('/offer', offerRouter);
 indexRouter.use('/rating', ratingRouter);
 indexRouter.use('/banner', bannerRouter);
+indexRouter.use('/staff', staffRouter);
 
 
 module.exports = indexRouter;

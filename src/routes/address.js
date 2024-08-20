@@ -6,10 +6,10 @@ const { addAddress, getAddress, updateAddress, deleteAddress } = require('../con
 const addressRouter = express.Router();
 
 
-addressRouter.post("/:id", addAddress);
-addressRouter.get("/:id", getAddress);
-addressRouter.put("/:id", updateAddress);
-addressRouter.delete("/:id", deleteAddress);
+addressRouter.post("/add/:id", addAddress);
+addressRouter.get("/get/:id", getAddress);
+addressRouter.put("/update/:id", updateAddress);
+addressRouter.delete("/delete/:id", deleteAddress);
 
 
 module.exports = addressRouter;

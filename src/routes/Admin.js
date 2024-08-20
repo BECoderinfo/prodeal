@@ -1,8 +1,8 @@
-const exprtess = require('express');
+const express = require('express');
 
 const { adminlogin, admincreate, OTPverify, resendOTP, forgotPassword , resetPassword } = require('../controllers/adminController');
 
-const adminRouter = exprtess.Router();
+const adminRouter = express.Router();
 
 
 adminRouter.post('/adminlogin', adminlogin);

@@ -165,12 +165,26 @@ const getOrderById = async (req, res) => {
 };
 
 const getAllOrders = async (req, res) => {
-    try {
-        const orders = await Order.find();
-        res.status(200).json(orders);
-    } catch (error) {
-        res.status(500).json({ error: 'Error fetching orders' });
+  try {
+    const business = req.params.businessId;
+
+    if (!business) {
+      return res.status(400).json({ error: 'Business ID is required' });
     }
+
+    const orders = await Order.find().populate({
+        path: 'offerId',
+        match: { businessId: business }
+    });
+
+    const filteredOrders = orders.filter(order => order.offerId !== null);
+
+    const totalOrders = filteredOrders.length;
+
+    res.status(200).json({ totalOrders, orders: filteredOrders });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching orders' });
+  }
 }
 
 const getTodayOrders = async (req, res) => {
