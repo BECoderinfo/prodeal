@@ -1,17 +1,33 @@
 const Offer = require('../models/offer');
+const Business = require('../models/business');
 
 //Create Offer
 const createOffer = async (req, res) => {
-    const { productId, businessId, offertype, offer, description, expiryDate } = req.body;
-    if (!productId || !businessId || !offertype || !offer || !description || !expiryDate) {
-        return res.status(400).json({ error: 'Please provide all the required fields' });   
-    }
     try {
-        const convertedExpiryDate = new Date(expiryDate);
+        const { offertype, offerPrice, description, expiryDate, businessId, productPrice, validOn } = req.body;
 
-        const newOffer = new Offer({ productId, businessId, offertype, offer, description, expiryDate: convertedExpiryDate });
-        await newOffer.save();
-        return res.status(200).json({ message: 'Offer added successfully' });
+        if (!offertype || !offerPrice || !description || !expiryDate || !businessId || !productPrice || !validOn) {
+            return res.status(400).json({ error: 'Please provide all the required fields' });
+        }
+
+        const business = await Business.findOne({ _id : businessId }); 
+        if(!business){
+            return res.status(400).json({ error: 'Please provide valid businessId' });  
+        }
+
+        let paymentAmount;
+
+        if (offertype === 'Percentage') {
+            paymentAmount = productPrice -((offerPrice / 100) * productPrice); 
+        } else {
+            paymentAmount = productPrice - offerPrice;
+        }
+
+        req.body.paymentAmount = paymentAmount;
+
+        const offer = await Offer.create(req.body);
+
+        return res.status(201).json({ message: 'Offer created successfully', offer });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -47,37 +63,19 @@ const getOffersByBusinessId = async (req, res) => {
 };
 
 //Update Offer
-const updateOffer = async (req, res) => { 
-    
-    const { productId, businessId, offertype, offer, description, expiryDate } = req.body;
-
-    const offerToUpdate = await Offer.findOne({ productId: req.params.id });
-
-
+const updateOffer = async (req, res) => {
     try {
-        if(!offerToUpdate) {
+        const updatedOffer = await Offer.findByIdAndUpdate(req.params.offerId,req.body,{ new: true });
+
+        if (!updateOffer) {
             return res.status(404).json({ error: 'Offer not found' });
         }
-        const updatedOffer = await Offer.findByIdAndUpdate(
-            offerToUpdate._id,
-            {
-                $set: {
-            
-                    offertype,
-                    offer,
-                    description,
-                    expiryDate: new Date(expiryDate),
-                }
-            },
-            { new: true }
-        );
-        res.status(200).json({ message: 'Offer updated successfully', oldOffer: offerToUpdate, updatedOffer });
+
+        res.status(200).json({ message: 'Offer updated successfully',  updatedOffer });
+
     } catch (error) {
-        if (!updatedOffer) {
-            return res.status(404).json({ error: 'Offer not found' });
-        }
-        return res.status(200).json({ message: 'Offer updated successfully', updatedOffer });
-    } 
+        return res.status(200).json({ message: error.message });
+    }
 };
 
 const deleteOffer = async (req, res) => {

@@ -1,7 +1,6 @@
 const express = require('express');
 const Notification = require('../models/notification');
 const User = require('../models/users');
-const Product = require('../models/product');
 const Business = require('../models/business');
 const Order = require('../models/order');
 

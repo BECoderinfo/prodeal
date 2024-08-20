@@ -5,21 +5,14 @@ const otpGenerator = require('otp-generator');
 const nodemailer = require('nodemailer');
 const cron = require('node-cron');
 
-// Delete unverified users after 24
+// Runs every 24 hours for deleting unverified users
 cron.schedule('0 0 * * *', async () => {
     try {
-        const now = Date.now();
-        const users = await User.find({
+        await User.deleteMany({
             status: 'unVerified',
-            createdAt: { $lte: new Date(now - 24 * 60 * 60 * 1000) } // 24 hours ago
         });
-
-        for (const user of users) {
-            await User.findByIdAndDelete(user._id);
-            console.log(`Deleted user ${user._id} due to expiry`);
-        }
-    } catch (error) {
-        console.error('Error during scheduled task:', error);
+    } catch (err) {
+        console.error('Error deleting unverified users:', err);
     }
 });
 
@@ -167,6 +160,19 @@ const OTPverify = async (req, res) => {
     } catch (error) {
         console.error('Error verifying OTP:', error);
         res.status(500).json({ message: 'Server error', error });
+    }
+};
+
+//Get user by userId
+const getUserById = async (req, res) => {   
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ user });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -355,4 +361,4 @@ const userPasswordUpdate = async (req, res) => {
     }
 };
 
-module.exports = { userRegister, userLogin, userImageUpload, userProfileUpdate, getAllUsers, sequre, OTPverify, resendOTP, forgetPassword, userPasswordUpdate };
+module.exports = { userRegister, userLogin, userImageUpload, userProfileUpdate, getAllUsers, sequre, OTPverify, resendOTP, forgetPassword, userPasswordUpdate, getUserById };

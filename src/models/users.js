@@ -56,11 +56,15 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 userSchema.pre("save", async function (next) {
-    if (this.isModified("status") && this.status === "Verified") {
-        this.otp = undefined;
-        this.otpExpires = undefined;
+    try {
+        if (this.isModified("status") && this.status === "Verified") {
+            this.otp = undefined;
+            this.otpExpires = undefined;
+        }
+        next();
+    } catch (err) {
+        next(err); 
     }
-    next();
 });
 
 const User = mongoose.model("User", userSchema);

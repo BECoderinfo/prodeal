@@ -7,7 +7,7 @@ const offerRouter = express.Router();
 
 offerRouter.post("/Create", createOffer);
 offerRouter.get("/Get", getOffers);
-offerRouter.put("/Update/:id", updateOffer);
+offerRouter.put("/Update/:offerId", updateOffer);
 offerRouter.get("/bussinessGet/:id", getOffersByBusinessId);
 offerRouter.delete("/Delete/:id", deleteOffer);
 

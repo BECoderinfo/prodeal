@@ -5,7 +5,6 @@ const User = require('../models/users');
 const Order = require('../models/order');
 
 
-
 const insertRequestBusiness = async (req, res, next) => {
   try {
     const { businessName, contactNumber, userId } = req.body;
@@ -57,7 +56,7 @@ const acceptBusinessRequest = async (req, res) => {
 
     await RequestBusiness.findByIdAndDelete(id);
 
-    res.status(201).json({ message: 'Business created successfully', user });
+    res.status(201).json({ message: 'Business request accepted successfully', user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error creating business' });
@@ -219,7 +218,6 @@ const UploadMenuImage = async (req, res) => {
 };
 
 //Upload store image
-
 const UploadStoreImage = async (req, res) => {
   try {
     const storeImage = req.file;

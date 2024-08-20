@@ -1,29 +1,6 @@
-const express = require('express');
-const validator = require("validator");
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
-    orderItems: [
-        {
-            product: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Product",
-                required: true,
-            },
-            quantity: {
-                type: Number,
-                default: 1,
-            },
-            price: {
-                type: Number,
-                required: true,
-            },
-            total: {
-                type: Number,
-                required: true,
-            },
-        },
-    ],
     status: {
         type: String,
         default: "Pending",
@@ -32,40 +9,35 @@ const orderSchema = new mongoose.Schema({
     orderStatus: {
         type: String,
         default: "Pending",
-        enum: ["Pending","Accepted","Rejected"],
-    },
-    businessId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Business",
-        required: true,
+        enum: ["Pending", "Accepted", "Rejected"],
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true,
     },
+    offerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Offers",
+        required: true
+    },
+    quantity: {
+        type: Number,
+        default: 1,
+    },
+    offerprice: {
+        type: Number,
+        default: 0.0,
+    },
     promocode: {
         type: String
     },
-    discount: [
-        {
-            type: String,
-        },
-        {
-            type: Number,
-            default: 0.0,
-        }
-    ],
-    tax: [
-        {   
-            type: String,
-        },
-        {   
-           type: Number,
-            default: 0.0,
-        }
-    ],
-    totalPrice: {   
+    discount:
+    {
+        type: Number,
+        default: 0.0,
+    },
+    totalPrice: {
         type: Number,
         required: true,
         default: 0.0,

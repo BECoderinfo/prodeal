@@ -4,7 +4,7 @@ const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage()})
 
 
-const { userRegister,userLogin, userProfileUpdate, userImageUpload, getAllUsers, sequre, OTPverify, resendOTP, forgetPassword, userPasswordUpdate} = require('../controllers/userController');
+const { userRegister,userLogin, userProfileUpdate, userImageUpload, getAllUsers, sequre, OTPverify, resendOTP, forgetPassword, userPasswordUpdate, getUserById} = require('../controllers/userController');
 
 const userRouter = express.Router();
 
@@ -13,6 +13,7 @@ userRouter.post("/login",userLogin);
 userRouter.put("/update/:id",upload.single('image'), userProfileUpdate);
 userRouter.post("/upload/:id",upload.single('image'),userImageUpload);
 userRouter.get("/alluser", getAllUsers);
+userRouter.get("/get/:id", getUserById);
 userRouter.post("/verify", OTPverify);
 userRouter.post("/resendOTP/:email", resendOTP);
 userRouter.post("/forget/:email", forgetPassword);
